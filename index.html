@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM CRITICAL ERROR</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%;
+    background:#000;
+    color:#0f0;
+    font-family: 'Courier New', monospace;
+    overflow:hidden;
+    cursor: none;
+    user-select:none;
+  }
+  #matrix {
+    position:fixed; inset:0;
+    z-index:0;
+    opacity:0.35;
+  }
+  #terminal {
+    position:fixed;
+    top:0; left:0; right:0; bottom:120px;
+    padding:16px;
+    font-size:13px;
+    line-height:1.3;
+    white-space:pre-wrap;
+    overflow:hidden;
+    z-index:2;
+    text-shadow:0 0 4px #0f0;
+  }
+  #terminal .err { color:#f33; font-weight:bold; text-shadow:0 0 6px #f00; }
+  #terminal .warn { color:#ff0; }
+  #terminal .ok { color:#0ff; }
+
+  #fake-cursor {
+    position:fixed;
+    width:18px; height:18px;
+    background:#f00;
+    border-radius:50%;
+    box-shadow:0 0 12px #f00, 0 0 24px #f00;
+    pointer-events:none;
+    z-index:9999;
+    top:0; left:0;
+    will-change: transform;
+  }
+
+  #glitch {
+    position:fixed; inset:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,0,0,0.06) 0px, transparent 2px),
+      repeating-linear-gradient(90deg, rgba(0,255,255,0.04) 0px, transparent 3px);
+    pointer-events:none;
+    z-index:3;
+    display:none;
+    mix-blend-mode:screen;
+  }
+
+  #redflash {
+    position:fixed; inset:0;
+    background:radial-gradient(circle, rgba(255,0,0,0.4), rgba(0,0,0,0.9));
+    pointer-events:none;
+    z-index:1;
+    opacity:0;
+    transition:opacity 0.15s;
+  }
+
+  #progress-wrap {
+    position:fixed;
+    left:20px; right:20px; bottom:80px;
+    z-index:5;
+    font-size:12px;
+    color:#f66;
+  }
+  #progress-bar {
+    height:14px;
+    background:#200;
+    border:1px solid #f00;
+    margin-top:4px;
+    overflow:hidden;
+  }
+  #progress-fill {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#f00,#ff0);
+    transition:width 0.3s;
+  }
+
+  #stats {
+    position:fixed;
+    top:10px; right:14px;
+    z-index:5;
+    font-size:12px;
+    color:#f66;
+    text-align:right;
+    text-shadow:0 0 6px #f00;
+  }
+  #stats b { color:#ff0; font-size:16px; }
+
+  .btn {
+    position:fixed;
+    bottom:20px;
+    padding:12px 20px;
+    font-family:monospace;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    z-index:10000;
+    border:2px solid;
+    background:transparent;
+    letter-spacing:1px;
+  }
+  #exit {
+    right:20px;
+    color:#f66;
+    border-color:#f66;
+    background:#200;
+  }
+  #exit:hover { background:#500; color:#fff; }
+  #joke {
+    left:20px;
+    color:#0ff;
+    border-color:#0ff;
+    background:#002;
+  }
+  #joke:hover { background:#004; color:#fff; }
+
+  /* Modal */
+  #modal-layer {
+    position:fixed; inset:0;
+    z-index:8000;
+    pointer-events:none;
+  }
+  .modal {
+    position:absolute;
+    background:#111;
+    border:2px solid #f00;
+    color:#fff;
+    padding:16px 20px;
+    font-family:monospace;
+    font-size:13px;
+    min-width:280px;
+    box-shadow:0 0 20px #f00, 0 0 40px rgba(255,0,0,0.4);
+    animation: popin 0.15s ease-out;
+  }
+  .modal .title {
+    color:#f66;
+    font-weight:bold;
+    margin-bottom:8px;
+    border-bottom:1px solid #500;
+    padding-bottom:6px;
+  }
+  .modal button {
+    margin-top:12px;
+    background:#300;
+    color:#f66;
+    border:1px solid #f66;
+    padding:6px 14px;
+    font-family:monospace;
+    cursor:pointer;
+  }
+  @keyframes popin {
+    from { transform:scale(0.7); opacity:0; }
+    to { transform:scale(1); opacity:1; }
+  }
+
+  #note {
+    position:fixed;
+    bottom:80px; left:50%;
+    transform:translateX(-50%);
+    color:#0ff;
+    font-size:14px;
+    text-align:center;
+    z-index:6000;
+    display:none;
+    text-shadow:0 0 8px #0ff;
+    max-width:90%;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+<div id="redflash"></div>
+<div id="terminal"></div>
+<div id="glitch"></div>
+<div id="fake-cursor"></div>
+
+<div id="stats">
+  WYKRYTE ZAGROŻENIA: <b id="threat-count">0</b><br>
+  ZAINFEKOWANE PLIKI: <b id="file-count">0</b>
+</div>
+
+<div id="progress-wrap">
+  <div>USUWANIE DYSKU C:\ ... <span id="progress-label">0%</span></div>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+</div>
+
+<div id="modal-layer"></div>
+
+<div id="note">To tylko żart 😈 — nic Ci nie grozi. Kliknij "WYJDŹ" po prawej.</div>
+
+<button class="btn" id="joke">TO TYLKO ŻART</button>
+<button class="btn" id="exit">WYJDŹ</button>
+
+<audio id="music" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* =========================================================
+   1. MATRIX RAIN
+   ========================================================= */
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+let W, H, cols, drops;
+const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
+function resizeCanvas() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cols = Math.floor(W / 16);
+  drops = new Array(cols).fill(0).map(() => Math.random() * H);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#0f0';
+  ctx.font = '14px monospace';
+  for (let i=0; i<cols; i++) {
+    const ch = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+    ctx.fillText(ch, i*16, drops[i]);
+    if (drops[i] > H && Math.random() > 0.975) drops[i] = 0;
+    drops[i] += 14;
+  }
+}
+setInterval(drawMatrix, 45);
+
+/* =========================================================
+   2. TERMINAL — losowe znaki + błędy
+   ========================================================= */
+const terminal = document.getElementById('terminal');
+const allChars = 'ABCDEF0123456789!@#$%^&*()[]{}<>/\\|;:';
+
+function randomLine() {
+  let s = '';
+  const len = 40 + Math.floor(Math.random()*60);
+  for (let i=0; i<len; i++) s += allChars[Math.floor(Math.random()*allChars.length)];
+  return s;
+}
+
+setInterval(() => {
+  const line = document.createElement('div');
+  line.textContent = randomLine();
+  terminal.appendChild(line);
+  while (terminal.children.length > 80) terminal.removeChild(terminal.firstChild);
+}, 70);
+
+const errors = [
+  'ERROR 0xDEADBEEF: krytyczny błąd jądra systemu',
+  'WARNING: wykryto nieautoryzowany dostęp do portu 443',
+  'FATAL: utrata połączenia z serwerem głównym',
+  'CRITICAL: sektor 0x00A1F uszkodzony',
+  'ERROR: nie można odczytać pliku systemowego',
+  'WARNING: wykryto trojan.exe w C:\\Windows\\System32',
+  'FATAL: pamięć RAM uszkodzona w 47%',
+  'CRITICAL: firewall wyłączony',
+  'ERROR 0x80070005: odmowa dostępu',
+  'WARNING: nieautoryzowana próba szyfrowania dysku',
+];
+const okMsgs = [
+  'OK: plik usunięty pomyślnie',
+  'OK: sektor nadpisany zerami',
+  'OK: połączenie przerwane',
+];
+
+setInterval(() => {
+  const div = document.createElement('div');
+  const r = Math.random();
+  if (r < 0.65) {
+    div.className = 'err';
+    div.textContent = '>>> ' + errors[Math.floor(Math.random()*errors.length)];
+  } else if (r < 0.85) {
+    div.className = 'warn';
+    div.textContent = '!! ' + errors[Math.floor(Math.random()*errors.length)];
+  } else {
+    div.className = 'ok';
+    div.textContent = '++ ' + okMsgs[Math.floor(Math.random()*okMsgs.length)];
+  }
+  terminal.appendChild(div);
+  while (terminal.children.length > 80) terminal.removeChild(terminal.firstChild);
+}, 1300);
+
+/* =========================================================
+   3. FAŁSZYWY KURSOR — wariuje
+   ========================================================= */
+const fakeCursor = document.getElementById('fake-cursor');
+let mx = window.innerWidth/2, my = window.innerHeight/2;
+let cx = mx, cy = my;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+document.addEventListener('touchmove', e => {
+  if (e.touches[0]) { mx = e.touches[0].clientX; my = e.touches[0].clientY; }
+}, { passive:true });
+
+function animateCursor() {
+  const jitterX = (Math.random()-0.5) * 14;
+  const jitterY = (Math.random()-0.5) * 14;
+  cx += (mx - cx) * 0.25 + jitterX;
+  cy += (my - cy) * 0.25 + jitterY;
+  fakeCursor.style.transform = `translate(${cx}px, ${cy}px)`;
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+/* =========================================================
+   4. GLITCH + RED FLASH + SCREEN SHAKE
+   ========================================================= */
+const glitch = document.getElementById('glitch');
+const redflash = document.getElementById('redflash');
+
+setInterval(() => {
+  glitch.style.display = 'block';
+  redflash.style.opacity = '0.6';
+  // trzęsienie
+  const shakeX = (Math.random()-0.5)*10;
+  const shakeY = (Math.random()-0.5)*10;
+  document.body.style.transform = `translate(${shakeX}px,${shakeY}px)`;
+  setTimeout(() => {
+    glitch.style.display = 'none';
+    redflash.style.opacity = '0';
+    document.body.style.transform = 'translate(0,0)';
+  }, 250 + Math.random()*300);
+}, 3500);
+
+// dodatkowy mikro-glitch co 800ms
+setInterval(() => {
+  const t = (Math.random()-0.5)*3;
+  terminal.style.transform = `translate(${t}px, ${-t}px)`;
+  setTimeout(()=> terminal.style.transform = 'translate(0,0)', 60);
+}, 800);
+
+/* =========================================================
+   5. LICZNIKI ZAGROŻEŃ
+   ========================================================= */
+const threatEl = document.getElementById('threat-count');
+const fileEl = document.getElementById('file-count');
+let threats = 0, files = 0;
+setInterval(() => {
+  threats += Math.floor(Math.random()*5) + 1;
+  files += Math.floor(Math.random()*3) + 1;
+  threatEl.textContent = threats;
+  fileEl.textContent = files;
+}, 400);
+
+/* =========================================================
+   6. PASEK POSTĘPU "USUWANIA"
+   ========================================================= */
+const fill = document.getElementById('progress-fill');
+const label = document.getElementById('progress-label');
+let progress = 0;
+let direction = 1;
+setInterval(() => {
+  progress += direction * (Math.random()*2);
+  if (progress >= 100) { progress = 100; direction = -1; }
+  if (progress <= 0) { progress = 0; direction = 1; }
+  fill.style.width = progress + '%';
+  label.textContent = Math.floor(progress) + '%';
+}, 300);
+
+/* =========================================================
+   7. FAŁSZYWE OKNA DIALOGOWE
+   ========================================================= */
+const modalLayer = document.getElementById('modal-layer');
+const modalMessages = [
+  'Czy na pewno chcesz usunąć plik systemowy?',
+  'UWAGA: Wykryto wirusa. Kontynuować?',
+  'Błąd krytyczny. System zostanie zrestartowany.',
+  'Dostęp do dysku C:\\ zablokowany.',
+  'Czy chcesz sformatować dysk?',
+  'Proces explorer.exe został zatrzymany.',
+  'Wykryto 47 zagrożeń. Usunąć?',
+  'Połączenie z internetem przerwane.',
+];
+
+function spawnModal() {
+  const msg = modalMessages[Math.floor(Math.random()*modalMessages.length)];
+  const m = document.createElement('div');
+  m.className = 'modal';
+  const maxX = window.innerWidth - 320;
+  const maxY = window.innerHeight - 220;
+  m.style.left = Math.max(10, Math.random()*maxX) + 'px';
+  m.style.top  = Math.max(10, Math.random()*maxY) + 'px';
+  m.innerHTML = `
+    <div class="title">⚠ SYSTEM ALERT</div>
+    <div>${msg}</div>
+    <button>Anuluj</button>
+  `;
+  m.querySelector('button').addEventListener('click', (e) => {
+    e.stopPropagation();
+    m.remove();
+  });
+  modalLayer.appendChild(m);
+
+  // max 4 modale na raz
+  while (modalLayer.children.length > 4) modalLayer.removeChild(modalLayer.firstChild);
+}
+
+setInterval(spawnModal, 4500);
+
+/* =========================================================
+   8. MUZYKA — start po pierwszym kliknięciu
+   ========================================================= */
+const music = document.getElementById('music');
+let musicStarted = false;
+document.body.addEventListener('click', () => {
+  if (!musicStarted) {
+    music.volume = 0.6;
+    music.play().catch(() => {});
+    musicStarted = true;
+  }
+}, { once: true });
+
+/* =========================================================
+   9. PRZYCISK "TO TYLKO ŻART"
+   ========================================================= */
+const note = document.getElementById('note');
+document.getElementById('joke').addEventListener('click', (e) => {
+  e.stopPropagation();
+  note.style.display = 'block';
+  // wycisz wszystko
+  glitch.style.display = 'none';
+  redflash.style.opacity = '0';
+  document.body.style.transform = 'translate(0,0)';
+  modalLayer.innerHTML = '';
+});
+
+/* =========================================================
+   10. WYJDŹ
+   ========================================================= */
+document.getElementById('exit').addEventListener('click', (e) => {
+  e.stopPropagation();
+  music.pause();
+  window.location.href = 'https://www.google.com';
+});
+</script>
+</body>
+</html>
