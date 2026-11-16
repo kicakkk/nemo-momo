@@ -307,8 +307,8 @@ document.addEventListener('touchmove', e => {
 }, { passive:true });
 
 function animateCursor() {
-  const jitterX = (Math.random()-0.5) * 14;
-  const jitterY = (Math.random()-0.5) * 14;
+  const jitterX = (Math.random()-0.5) * 80;
+  const jitterY = (Math.random()-0.5) * 80;
   cx += (mx - cx) * 0.25 + jitterX;
   cy += (my - cy) * 0.25 + jitterY;
   fakeCursor.style.transform = `translate(${cx}px, ${cy}px)`;
@@ -424,28 +424,6 @@ document.body.addEventListener('click', () => {
   }
 }, { once: true });
 
-/* =========================================================
-   9. PRZYCISK "TO TYLKO ŻART"
-   ========================================================= */
-const note = document.getElementById('note');
-document.getElementById('joke').addEventListener('click', (e) => {
-  e.stopPropagation();
-  note.style.display = 'block';
-  // wycisz wszystko
-  glitch.style.display = 'none';
-  redflash.style.opacity = '0';
-  document.body.style.transform = 'translate(0,0)';
-  modalLayer.innerHTML = '';
-});
-
-/* =========================================================
-   10. WYJDŹ
-   ========================================================= */
-document.getElementById('exit').addEventListener('click', (e) => {
-  e.stopPropagation();
-  music.pause();
-  window.location.href = 'https://www.google.com';
-});
 </script>
 </body>
 </html>
