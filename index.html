@@ -15,20 +15,12 @@
     cursor: none;
     user-select:none;
   }
-  #matrix {
-    position:fixed; inset:0;
-    z-index:0;
-    opacity:0.35;
-  }
+  #matrix { position:fixed; inset:0; z-index:0; opacity:0.35; }
+  
   #terminal {
-    position:fixed;
-    top:0; left:0; right:0; bottom:120px;
-    padding:16px;
-    font-size:13px;
-    line-height:1.3;
-    white-space:pre-wrap;
-    overflow:hidden;
-    z-index:2;
+    position:fixed; top:0; left:0; right:0; bottom:120px;
+    padding:16px; font-size:13px; line-height:1.3;
+    white-space:pre-wrap; overflow:hidden; z-index:2;
     text-shadow:0 0 4px #0f0;
   }
   #terminal .err { color:#f33; font-weight:bold; text-shadow:0 0 6px #f00; }
@@ -36,148 +28,72 @@
   #terminal .ok { color:#0ff; }
 
   #fake-cursor {
-    position:fixed;
-    width:18px; height:18px;
-    background:#f00;
-    border-radius:50%;
-    box-shadow:0 0 12px #f00, 0 0 24px #f00;
-    pointer-events:none;
-    z-index:9999;
-    top:0; left:0;
+    position:fixed; width:18px; height:18px; background:#f00;
+    border-radius:50%; box-shadow:0 0 12px #f00, 0 0 24px #f00;
+    pointer-events:none; z-index:9999; top:0; left:0;
     will-change: transform;
   }
 
   #glitch {
     position:fixed; inset:0;
-    background:
-      repeating-linear-gradient(0deg, rgba(255,0,0,0.06) 0px, transparent 2px),
-      repeating-linear-gradient(90deg, rgba(0,255,255,0.04) 0px, transparent 3px);
-    pointer-events:none;
-    z-index:3;
-    display:none;
-    mix-blend-mode:screen;
+    background: repeating-linear-gradient(0deg, rgba(255,0,0,0.06) 0px, transparent 2px),
+                repeating-linear-gradient(90deg, rgba(0,255,255,0.04) 0px, transparent 3px);
+    pointer-events:none; z-index:3; display:none; mix-blend-mode:screen;
   }
 
   #redflash {
-    position:fixed; inset:0;
+    position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0;
     background:radial-gradient(circle, rgba(255,0,0,0.4), rgba(0,0,0,0.9));
-    pointer-events:none;
-    z-index:1;
-    opacity:0;
     transition:opacity 0.15s;
   }
 
-  #progress-wrap {
-    position:fixed;
-    left:20px; right:20px; bottom:80px;
-    z-index:5;
-    font-size:12px;
-    color:#f66;
-  }
-  #progress-bar {
-    height:14px;
-    background:#200;
-    border:1px solid #f00;
-    margin-top:4px;
-    overflow:hidden;
-  }
-  #progress-fill {
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg,#f00,#ff0);
-    transition:width 0.3s;
-  }
-
   #stats {
-    position:fixed;
-    top:10px; right:14px;
-    z-index:5;
-    font-size:12px;
-    color:#f66;
-    text-align:right;
-    text-shadow:0 0 6px #f00;
+    position:fixed; top:10px; right:14px; z-index:5;
+    font-size:12px; color:#f66; text-align:right; text-shadow:0 0 6px #f00;
   }
   #stats b { color:#ff0; font-size:16px; }
 
   .btn {
-    position:fixed;
-    bottom:20px;
-    padding:12px 20px;
-    font-family:monospace;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-    z-index:10000;
-    border:2px solid;
-    background:transparent;
-    letter-spacing:1px;
+    position:fixed; bottom:20px; padding:12px 20px;
+    font-family:monospace; font-size:14px; font-weight:bold;
+    cursor:pointer; z-index:10000; border:2px solid;
+    background:transparent; letter-spacing:1px;
   }
-  #exit {
-    right:20px;
-    color:#f66;
-    border-color:#f66;
-    background:#200;
-  }
+  #exit { right:20px; color:#f66; border-color:#f66; background:#200; }
   #exit:hover { background:#500; color:#fff; }
-  #joke {
-    left:20px;
-    color:#0ff;
-    border-color:#0ff;
-    background:#002;
-  }
+  #joke { left:20px; color:#0ff; border-color:#0ff; background:#002; }
   #joke:hover { background:#004; color:#fff; }
 
-  /* Modal */
-  #modal-layer {
-    position:fixed; inset:0;
-    z-index:8000;
-    pointer-events:none;
-  }
+  #modal-layer { position:fixed; inset:0; z-index:8000; pointer-events:none; }
   .modal {
-    position:absolute;
-    background:#111;
-    border:2px solid #f00;
-    color:#fff;
-    padding:16px 20px;
-    font-family:monospace;
-    font-size:13px;
-    min-width:280px;
+    position:absolute; background:#111; border:2px solid #f00; color:#fff;
+    padding:16px 20px; font-family:monospace; font-size:13px; min-width:280px;
     box-shadow:0 0 20px #f00, 0 0 40px rgba(255,0,0,0.4);
     animation: popin 0.15s ease-out;
   }
-  .modal .title {
-    color:#f66;
-    font-weight:bold;
-    margin-bottom:8px;
-    border-bottom:1px solid #500;
-    padding-bottom:6px;
-  }
-  .modal button {
-    margin-top:12px;
-    background:#300;
-    color:#f66;
-    border:1px solid #f66;
-    padding:6px 14px;
-    font-family:monospace;
-    cursor:pointer;
-  }
-  @keyframes popin {
-    from { transform:scale(0.7); opacity:0; }
-    to { transform:scale(1); opacity:1; }
-  }
+  .modal .title { color:#f66; font-weight:bold; margin-bottom:8px; border-bottom:1px solid #500; padding-bottom:6px; }
+  .modal button { margin-top:12px; background:#300; color:#f66; border:1px solid #f66; padding:6px 14px; font-family:monospace; cursor:pointer; }
+  @keyframes popin { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
 
   #note {
-    position:fixed;
-    bottom:80px; left:50%;
-    transform:translateX(-50%);
-    color:#0ff;
-    font-size:14px;
-    text-align:center;
-    z-index:6000;
-    display:none;
-    text-shadow:0 0 8px #0ff;
-    max-width:90%;
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+    color:#0ff; font-size:14px; text-align:center; z-index:6000; display:none;
+    text-shadow:0 0 8px #0ff; max-width:90%; background:rgba(0,0,0,0.8); padding:10px;
   }
+
+  /* FAŁSZYWY NIEBIESKI EKRAN (BSOD) */
+  #bsod {
+    position:fixed; inset:0; background:#0078D7; color:#fff;
+    z-index:99999; display:none; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding:10% 15%; flex-direction:column; justify-content:center;
+  }
+  #bsod h1 { font-size:80px; font-weight:normal; margin-bottom:20px; }
+  #bsod p { font-size:24px; margin-bottom:15px; line-height:1.4; }
+  #bsod .percent { font-size:24px; margin-top:20px; margin-bottom:20px; }
+  #bsod .qr-area { display:flex; align-items:center; margin-top:20px; }
+  #bsod .qr-box { width:120px; height:120px; background:#fff; margin-right:20px; padding:5px; }
+  #bsod .qr-box img { width:100%; height:100%; }
+  #bsod .small { font-size:14px; opacity:0.8; }
 </style>
 </head>
 <body>
@@ -193,17 +109,29 @@
   ZAINFEKOWANE PLIKI: <b id="file-count">0</b>
 </div>
 
-<div id="progress-wrap">
-  <div>USUWANIE DYSKU C:\ ... <span id="progress-label">0%</span></div>
-  <div id="progress-bar"><div id="progress-fill"></div></div>
-</div>
-
 <div id="modal-layer"></div>
 
-<div id="note">To tylko żart 😈 — nic Ci nie grozi. Kliknij "WYJDŹ" po prawej.</div>
+<div id="note">To tylko żart 😈 — nic Ci nie grozi. Kliknij "WYJDŹ" lub "TO TYLKO ŻART".</div>
 
 <button class="btn" id="joke">TO TYLKO ŻART</button>
 <button class="btn" id="exit">WYJDŹ</button>
+
+<!-- UKRYTY FAŁSZYWY BSOD -->
+<div id="bsod">
+  <h1>:(</h1>
+  <p>Na Twoim komputerze wystąpił problem i wymaga ponownego uruchomienia. Zbieramy informacje o błędzie, a następnie uruchomimy komputer ponownie.</p>
+  <div class="percent"><span id="bsod-percent">0</span>% ukończono</div>
+  
+  <div class="qr-area">
+    <div class="qr-box">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://google.com" alt="QR">
+    </div>
+    <div>
+      <p class="small">Aby uzyskać więcej informacji, możesz później wyszukać ten błąd w Internecie.</p>
+      <p class="small">Kod błędu: CRITICAL_PROCESS_DIED</p>
+    </div>
+  </div>
+</div>
 
 <audio id="music" loop preload="auto">
   <source src="music.mp3" type="audio/mpeg">
@@ -241,18 +169,16 @@ function drawMatrix() {
 setInterval(drawMatrix, 45);
 
 /* =========================================================
-   2. TERMINAL — losowe znaki + błędy
+   2. TERMINAL
    ========================================================= */
 const terminal = document.getElementById('terminal');
 const allChars = 'ABCDEF0123456789!@#$%^&*()[]{}<>/\\|;:';
-
 function randomLine() {
   let s = '';
   const len = 40 + Math.floor(Math.random()*60);
   for (let i=0; i<len; i++) s += allChars[Math.floor(Math.random()*allChars.length)];
   return s;
 }
-
 setInterval(() => {
   const line = document.createElement('div');
   line.textContent = randomLine();
@@ -269,34 +195,21 @@ const errors = [
   'WARNING: wykryto trojan.exe w C:\\Windows\\System32',
   'FATAL: pamięć RAM uszkodzona w 47%',
   'CRITICAL: firewall wyłączony',
-  'ERROR 0x80070005: odmowa dostępu',
-  'WARNING: nieautoryzowana próba szyfrowania dysku',
 ];
-const okMsgs = [
-  'OK: plik usunięty pomyślnie',
-  'OK: sektor nadpisany zerami',
-  'OK: połączenie przerwane',
-];
+const okMsgs = ['OK: plik usunięty pomyślnie', 'OK: sektor nadpisany zerami'];
 
 setInterval(() => {
   const div = document.createElement('div');
   const r = Math.random();
-  if (r < 0.65) {
-    div.className = 'err';
-    div.textContent = '>>> ' + errors[Math.floor(Math.random()*errors.length)];
-  } else if (r < 0.85) {
-    div.className = 'warn';
-    div.textContent = '!! ' + errors[Math.floor(Math.random()*errors.length)];
-  } else {
-    div.className = 'ok';
-    div.textContent = '++ ' + okMsgs[Math.floor(Math.random()*okMsgs.length)];
-  }
+  if (r < 0.65) { div.className = 'err'; div.textContent = '>>> ' + errors[Math.floor(Math.random()*errors.length)]; }
+  else if (r < 0.85) { div.className = 'warn'; div.textContent = '!! ' + errors[Math.floor(Math.random()*errors.length)]; }
+  else { div.className = 'ok'; div.textContent = '++ ' + okMsgs[Math.floor(Math.random()*okMsgs.length)]; }
   terminal.appendChild(div);
   while (terminal.children.length > 80) terminal.removeChild(terminal.firstChild);
-}, 1300);
+}, 1000);
 
 /* =========================================================
-   3. FAŁSZYWY KURSOR — wariuje
+   3. WARIUJĄCY KURSOR (MOCNO TRZĘSIE)
    ========================================================= */
 const fakeCursor = document.getElementById('fake-cursor');
 let mx = window.innerWidth/2, my = window.innerHeight/2;
@@ -307,25 +220,25 @@ document.addEventListener('touchmove', e => {
 }, { passive:true });
 
 function animateCursor() {
+  // MOCNE TRZĘSIENIE (80 zamiast 14)
   const jitterX = (Math.random()-0.5) * 80;
   const jitterY = (Math.random()-0.5) * 80;
-  cx += (mx - cx) * 0.25 + jitterX;
-  cy += (my - cy) * 0.25 + jitterY;
+  // WOLNE GONIENIE (0.05 zamiast 0.25)
+  cx += (mx - cx) * 0.05 + jitterX;
+  cy += (my - cy) * 0.05 + jitterY;
   fakeCursor.style.transform = `translate(${cx}px, ${cy}px)`;
   requestAnimationFrame(animateCursor);
 }
 animateCursor();
 
 /* =========================================================
-   4. GLITCH + RED FLASH + SCREEN SHAKE
+   4. GLITCH + RED FLASH
    ========================================================= */
 const glitch = document.getElementById('glitch');
 const redflash = document.getElementById('redflash');
-
 setInterval(() => {
   glitch.style.display = 'block';
   redflash.style.opacity = '0.6';
-  // trzęsienie
   const shakeX = (Math.random()-0.5)*10;
   const shakeY = (Math.random()-0.5)*10;
   document.body.style.transform = `translate(${shakeX}px,${shakeY}px)`;
@@ -336,15 +249,8 @@ setInterval(() => {
   }, 250 + Math.random()*300);
 }, 3500);
 
-// dodatkowy mikro-glitch co 800ms
-setInterval(() => {
-  const t = (Math.random()-0.5)*3;
-  terminal.style.transform = `translate(${t}px, ${-t}px)`;
-  setTimeout(()=> terminal.style.transform = 'translate(0,0)', 60);
-}, 800);
-
 /* =========================================================
-   5. LICZNIKI ZAGROŻEŃ
+   5. LICZNIKI
    ========================================================= */
 const threatEl = document.getElementById('threat-count');
 const fileEl = document.getElementById('file-count');
@@ -357,35 +263,16 @@ setInterval(() => {
 }, 400);
 
 /* =========================================================
-   6. PASEK POSTĘPU "USUWANIA"
-   ========================================================= */
-const fill = document.getElementById('progress-fill');
-const label = document.getElementById('progress-label');
-let progress = 0;
-let direction = 1;
-setInterval(() => {
-  progress += direction * (Math.random()*2);
-  if (progress >= 100) { progress = 100; direction = -1; }
-  if (progress <= 0) { progress = 0; direction = 1; }
-  fill.style.width = progress + '%';
-  label.textContent = Math.floor(progress) + '%';
-}, 300);
-
-/* =========================================================
-   7. FAŁSZYWE OKNA DIALOGOWE
+   6. OKNA DIALOGOWE
    ========================================================= */
 const modalLayer = document.getElementById('modal-layer');
 const modalMessages = [
   'Czy na pewno chcesz usunąć plik systemowy?',
   'UWAGA: Wykryto wirusa. Kontynuować?',
   'Błąd krytyczny. System zostanie zrestartowany.',
-  'Dostęp do dysku C:\\ zablokowany.',
-  'Czy chcesz sformatować dysk?',
+  'Czy chcesz sformatować dysk C:\\?',
   'Proces explorer.exe został zatrzymany.',
-  'Wykryto 47 zagrożeń. Usunąć?',
-  'Połączenie z internetem przerwane.',
 ];
-
 function spawnModal() {
   const msg = modalMessages[Math.floor(Math.random()*modalMessages.length)];
   const m = document.createElement('div');
@@ -394,35 +281,46 @@ function spawnModal() {
   const maxY = window.innerHeight - 220;
   m.style.left = Math.max(10, Math.random()*maxX) + 'px';
   m.style.top  = Math.max(10, Math.random()*maxY) + 'px';
-  m.innerHTML = `
-    <div class="title">⚠ SYSTEM ALERT</div>
-    <div>${msg}</div>
-    <button>Anuluj</button>
-  `;
-  m.querySelector('button').addEventListener('click', (e) => {
-    e.stopPropagation();
-    m.remove();
-  });
+  m.innerHTML = `<div class="title">⚠ SYSTEM ALERT</div><div>${msg}</div><button>Anuluj</button>`;
+  m.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); m.remove(); });
   modalLayer.appendChild(m);
-
-  // max 4 modale na raz
   while (modalLayer.children.length > 4) modalLayer.removeChild(modalLayer.firstChild);
 }
-
-setInterval(spawnModal, 4500);
+setInterval(spawnModal, 4000);
 
 /* =========================================================
-   8. MUZYKA — start po pierwszym kliknięciu
+   7. MUZYKA + PEŁNY EKRAN + BSOD PO 15 SEKUNDACH
    ========================================================= */
 const music = document.getElementById('music');
 let musicStarted = false;
+
 document.body.addEventListener('click', () => {
   if (!musicStarted) {
     music.volume = 0.6;
     music.play().catch(() => {});
     musicStarted = true;
   }
+  
+  // Włączenie pełnego ekranu (ukrycie paska przeglądarki)
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
 }, { once: true });
+
+// FAŁSZYWY BSOD PO 15 SEKUNDACH
+setTimeout(() => {
+  const bsod = document.getElementById('bsod');
+  bsod.style.display = 'flex';
+  let bsodP = 0;
+  const bsodInt = setInterval(() => {
+    bsodP += Math.floor(Math.random()*3) + 1;
+    if (bsodP > 100) bsodP = 100;
+    document.getElementById('bsod-percent').textContent = bsodP;
+    if (bsodP === 100) clearInterval(bsodInt);
+  }, 500); // licznik nabija się powoli
+}, 15000); 
+
+
 
 </script>
 </body>
