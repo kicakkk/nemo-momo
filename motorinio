@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Ptoszek v2</title>
+<style>
+  body {
+    margin: 0; height: 100vh; overflow: hidden;
+    background: #111; color: #0f0;
+    font-family: monospace;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #start { font-size: 2rem; text-align: center; cursor: pointer; }
+  .bird {
+    position: fixed; font-size: 2rem; pointer-events: none;
+    transition: transform 0.3s;
+  }
+  .popup {
+    position: fixed; width: 220px; padding: 12px;
+    background: #fff; color: #000; border: 2px solid #000;
+    font-family: sans-serif; font-size: 13px; z-index: 9999;
+    box-shadow: 4px 4px 0 #000;
+  }
+</style>
+</head>
+<body>
+
+<div id="start">Siemano kolano!<br>Walnij 3 razy w spację 🐦</div>
+
+<script>
+let hits = 0;
+const texts = [
+  "Ptoszek tu był 🐤",
+  "Nie ma nic za darmo",
+  "Zamknij mnie, jeśli potrafisz",
+  "Rickroll nadchodzi...",
+  "To tylko żart :)",
+  "Twoja przeglądarka jest fajna",
+  "🐦🐦🐦"
+];
+
+// dźwięk – prosty beep (bez zewnętrznych plików)
+function beep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  o.frequency.value = 800; g.gain.value = 0.1;
+  o.start();
+  o.stop(ctx.currentTime + 0.15);
+}
+
+// skaczące ptaszki
+function spawnBird() {
+  const b = document.createElement('div');
+  b.className = 'bird';
+  b.textContent = ['🐦','🐤','🦅','🐧','🦉'][Math.floor(Math.random()*5)];
+  b.style.left = Math.random() * (window.innerWidth - 40) + 'px';
+  b.style.top  = Math.random() * (window.innerHeight - 40) + 'px';
+  document.body.appendChild(b);
+  setInterval(() => {
+    b.style.transform = `translate(${Math.random()*200-100}px, ${Math.random()*200-100}px) rotate(${Math.random()*360}deg)`;
+  }, 400);
+}
+
+// wyskakujące okienka w obrębie strony (nie blokowane przez przeglądarkę)
+function spawnPopup() {
+  const p = document.createElement('div');
+  p.className = 'popup';
+  p.textContent = texts[Math.floor(Math.random()*texts.length)];
+  p.style.left = Math.random() * (window.innerWidth - 240) + 'px';
+  p.style.top  = Math.random() * (window.innerHeight - 120) + 'px';
+  p.onclick = () => p.remove();
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 8000);
+}
+
+// prawdziwe okno przeglądarki (może być zablokowane – dlatego robimy też divy)
+function realPopup() {
+  try {
+    const w = window.open('', '', 'width=300,height=200');
+    if (w) w.document.write('<h1>Ptoszek 🐦</h1><p>To tylko żart</p>');
+  } catch(e) {}
+}
+
+function fire() {
+  beep();
+  for (let i = 0; i < 5; i++) setTimeout(spawnPopup, i * 200);
+  for (let i = 0; i < 8; i++) setTimeout(spawnBird, i * 300);
+  setTimeout(realPopup, 500);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    hits++;
+    if (hits === 3) {
+      document.getElementById('start').style.display = 'none';
+      fire();
+      setInterval(spawnPopup, 2500); // co jakiś czas kolejne okienko
+    }
+  }
+});
+</script>
+</body>
+</html>
