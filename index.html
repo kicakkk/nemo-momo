@@ -2,104 +2,178 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Ptoszek v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM CRITICAL ERROR</title>
 <style>
-  body {
-    margin: 0; height: 100vh; overflow: hidden;
-    background: #111; color: #0f0;
-    font-family: monospace;
-    display: flex; align-items: center; justify-content: center;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; background: #000; color: #0f0;
+    font-family: 'Courier New', monospace; overflow: hidden;
+    cursor: none; user-select: none;
   }
-  #start { font-size: 2rem; text-align: center; cursor: pointer; }
-  .bird {
-    position: fixed; font-size: 2rem; pointer-events: none;
-    transition: transform 0.3s;
+  
+  /* Efekt wstrząsu ekranu */
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
   }
+  .shake { animation: shake 0.5s; animation-iteration-count: infinite; }
+
+  #matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.2; pointer-events: none; }
+
+  /* Główny terminal */
+  #terminal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    padding: 20px; font-size: 16px; line-height: 1.3;
+    white-space: pre-wrap; overflow: hidden; z-index: 2;
+    text-shadow: 0 0 5px #0f0;
+  }
+  .err { color: #f33; font-weight: bold; text-shadow: 0 0 8px #f00; }
+  .warn { color: #ff0; }
+
+  /* Wyskakujące okienka z błędami */
   .popup {
-    position: fixed; width: 220px; padding: 12px;
-    background: #fff; color: #000; border: 2px solid #000;
-    font-family: sans-serif; font-size: 13px; z-index: 9999;
-    box-shadow: 4px 4px 0 #000;
+    position: fixed; z-index: 9999; padding: 15px;
+    background: #200; border: 2px solid #f00; color: #fff;
+    font-family: monospace; font-size: 14px; box-shadow: 0 0 20px #f00;
+    pointer-events: none; white-space: nowrap;
+  }
+  
+  /* Paski glitchowe */
+  .glitch-bar {
+    position: fixed; left: 0; width: 100%; height: 2px;
+    background: #f00; z-index: 9998; pointer-events: none;
+    opacity: 0.8; box-shadow: 0 0 10px #f00;
   }
 </style>
 </head>
 <body>
 
-<div id="start">Siemano kolano!<br>Walnij 3 razy w spację 🐦</div>
+<canvas id="matrix"></canvas>
+<div id="terminal"></div>
 
 <script>
-let hits = 0;
-const texts = [
-  "Ptoszek tu był 🐤",
-  "Nie ma nic za darmo",
-  "Zamknij mnie, jeśli potrafisz",
-  "Rickroll nadchodzi...",
-  "To tylko żart :)",
-  "Twoja przeglądarka jest fajna",
-  "🐦🐦🐦"
+// --- 1. EFEKT MATRIX (tło) ---
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'.split('');
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = [];
+for (let x = 0; x < columns; x++) drops[x] = 1;
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0F0';
+  ctx.font = fontSize + 'px monospace';
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+setInterval(drawMatrix, 35);
+
+// --- 2. TERMINAL (tekst się leje) ---
+const terminal = document.getElementById('terminal');
+const errors = [
+  '[CRITICAL] System32 files corrupted...',
+  '[ERROR] Cannot access memory at 0x00A1B2C3',
+  '> WARNING: Overheating detected!',
+  '> Injecting payload... SUCCESS',
+  '> Ransomware encrypted your files.',
+  '> JUST KIDDING. But you are scared, right?',
+  '> Your IP: 192.168.1.1 (tracking active)',
+  '> Sending data to server...',
+  '> [FATAL] Kernel panic.',
+  '> SYSTEM FAILURE IN 3... 2... 1...'
 ];
 
-// dźwięk – prosty beep (bez zewnętrznych plików)
-function beep() {
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  o.frequency.value = 800; g.gain.value = 0.1;
-  o.start();
-  o.stop(ctx.currentTime + 0.15);
+function writeLine() {
+  const div = document.createElement('div');
+  const r = Math.random();
+  if (r < 0.4) div.className = 'err';
+  else if (r < 0.7) div.className = 'warn';
+  
+  div.textContent = errors[Math.floor(Math.random() * errors.length)];
+  terminal.appendChild(div);
+  
+  // Auto-scroll i usuwanie starych
+  terminal.scrollTop = terminal.scrollHeight;
+  if (terminal.childNodes.length > 50) terminal.removeChild(terminal.firstChild);
 }
+setInterval(writeLine, 100);
 
-// skaczące ptaszki
-function spawnBird() {
-  const b = document.createElement('div');
-  b.className = 'bird';
-  b.textContent = ['🐦','🐤','🦅','🐧','🦉'][Math.floor(Math.random()*5)];
-  b.style.left = Math.random() * (window.innerWidth - 40) + 'px';
-  b.style.top  = Math.random() * (window.innerHeight - 40) + 'px';
-  document.body.appendChild(b);
-  setInterval(() => {
-    b.style.transform = `translate(${Math.random()*200-100}px, ${Math.random()*200-100}px) rotate(${Math.random()*360}deg)`;
-  }, 400);
-}
+// --- 3. WYSKAKUJĄCE OKIENKA Z BŁĘDAMI ---
+const popupTexts = [
+  'BŁĄD KRYTYCZNY',
+  'ZŁAPANO WIRUSA',
+  'SYSTEM ZARAZ WYBUCHNIE',
+  '404 NIE MA TEGO PLIKU',
+  'HACKED',
+  'WYŚLIJ 1000$ W BITCOINIE',
+  'ERROR 0x000000F4',
+  'UTRATA DANYCH'
+];
 
-// wyskakujące okienka w obrębie strony (nie blokowane przez przeglądarkę)
-function spawnPopup() {
+function createPopup() {
   const p = document.createElement('div');
   p.className = 'popup';
-  p.textContent = texts[Math.floor(Math.random()*texts.length)];
-  p.style.left = Math.random() * (window.innerWidth - 240) + 'px';
-  p.style.top  = Math.random() * (window.innerHeight - 120) + 'px';
-  p.onclick = () => p.remove();
+  p.textContent = popupTexts[Math.floor(Math.random() * popupTexts.length)];
+  
+  // Losowa pozycja
+  p.style.left = (Math.random() * (window.innerWidth - 200)) + 'px';
+  p.style.top = (Math.random() * (window.innerHeight - 50)) + 'px';
+  
   document.body.appendChild(p);
-  setTimeout(() => p.remove(), 8000);
+  
+  // Znikają po chwili (1-3 sekundy)
+  setTimeout(() => p.remove(), Math.random() * 2000 + 1000);
 }
 
-// prawdziwe okno przeglądarki (może być zablokowane – dlatego robimy też divy)
-function realPopup() {
-  try {
-    const w = window.open('', '', 'width=300,height=200');
-    if (w) w.document.write('<h1>Ptoszek 🐦</h1><p>To tylko żart</p>');
-  } catch(e) {}
+// --- 4. PASEK GLITCHU ---
+function createGlitchBar() {
+  const bar = document.createElement('div');
+  bar.className = 'glitch-bar';
+  bar.style.top = (Math.random() * window.innerHeight) + 'px';
+  document.body.appendChild(bar);
+  setTimeout(() => bar.remove(), 150);
 }
 
-function fire() {
-  beep();
-  for (let i = 0; i < 5; i++) setTimeout(spawnPopup, i * 200);
-  for (let i = 0; i < 8; i++) setTimeout(spawnBird, i * 300);
-  setTimeout(realPopup, 500);
-}
+// --- 5. ODPALANIE CHAOSU (po 2 sekundach od wejścia) ---
+setTimeout(() => {
+  // Wstrząs ekranu
+  document.body.classList.add('shake');
+  
+  // Wyskakujące okienka (coraz szybciej)
+  let popupInterval = setInterval(createPopup, 200);
+  
+  // Glitch paski
+  setInterval(createGlitchBar, 100);
 
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    hits++;
-    if (hits === 3) {
-      document.getElementById('start').style.display = 'none';
-      fire();
-      setInterval(spawnPopup, 2500); // co jakiś czas kolejne okienko
-    }
-  }
-});
+  // Po 10 sekundach zamykamy stronę (jeśli przeglądarka pozwoli)
+  setTimeout(() => {
+    clearInterval(popupInterval);
+    setInterval(createPopup, 1000); // spowolnienie
+    document.body.classList.remove('shake');
+    
+    // Opcjonalnie: window.close(); (przeglądarka może zablokować)
+  }, 10000);
+
+}, 2000);
 </script>
 </body>
 </html>
