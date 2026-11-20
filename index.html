@@ -45,13 +45,24 @@
     to { transform: scale(1); }
   }
 
-  /* Stroboskop */
+  /* Stroboskop z GIF-em w tle */
   #strobe-screen {
-    position: absolute; inset: 0; background: #fff;
+    position: absolute; inset: 0;
+    background: transparent;
     z-index: 30; display: none;
+    overflow: hidden;
   }
-  .flash-black { background: #000 !important; }
-  .flash-white { background: #fff !important; }
+  #strobe-screen::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: url('https://i.pinimg.com/originals/b6/e1/b7/b6e1b7f9ef3227a4294385d9980a50d3.gif');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+  }
+  .flash-black { background-color: rgba(0, 0, 0, 0.6) !important; }
+  .flash-white { background-color: rgba(255, 255, 255, 0.6) !important; }
 
   /* Blue Screen (BSOD) */
   #bsod-screen {
@@ -104,40 +115,33 @@ function initAudio() {
 function startMonsterSound() {
   initAudio();
   
-  // 1. Główny oscylator (niski dźwięk)
   monsterOsc = audioCtx.createOscillator();
   monsterOsc.type = 'sawtooth';
-  monsterOsc.frequency.value = 45; // Bardzo niska częstotliwość (bas)
+  monsterOsc.frequency.value = 45;
 
-  // 2. Modulator (LFO) - sprawia, że dźwięk "wibruje" (wrra a a a)
   monsterLfo = audioCtx.createOscillator();
   monsterLfo.type = 'sine';
-  monsterLfo.frequency.value = 12; // 12 wibracji na sekundę
+  monsterLfo.frequency.value = 12;
 
   const lfoGain = audioCtx.createGain();
-  lfoGain.gain.value = 15; // Jak bardzo ma wibrować
+  lfoGain.gain.value = 15;
 
-  // 3. Filtr dolnoprzepustowy (żeby brzmiało głucho i groźnie)
   const filter = audioCtx.createBiquadFilter();
   filter.type = 'lowpass';
   filter.frequency.value = 250;
 
-  // 4. Głośność (zaczyna od zera)
   monsterGain = audioCtx.createGain();
   monsterGain.gain.value = 0;
 
-  // Połączenia
   monsterLfo.connect(lfoGain);
   lfoGain.connect(monsterOsc.frequency);
   monsterOsc.connect(filter);
   filter.connect(monsterGain);
   monsterGain.connect(audioCtx.destination);
 
-  // Start
   monsterOsc.start();
   monsterLfo.start();
 
-  // Narastanie głośności (z 0 do 0.4 na przestrzeni 3 sekund)
   monsterGain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 3);
 }
 
@@ -145,19 +149,17 @@ function startMonsterSound() {
 function playJumpscareSound() {
   if (!audioCtx) return;
   
-  // Uciszamy potwora
   if (monsterGain) {
     monsterGain.gain.cancelScheduledValues(audioCtx.currentTime);
     monsterGain.gain.setValueAtTime(monsterGain.gain.value, audioCtx.currentTime);
     monsterGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
   }
 
-  // Puszczamy ostry dźwięk (biały szum / zgrzyt)
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   osc.type = 'square';
   osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5); // Opadający ton
+  osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
 
   gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
@@ -174,7 +176,6 @@ function startSequence() {
   const term = document.getElementById('terminal-screen');
   term.style.display = 'block';
   
-  // Odpalamy dźwięk potwora w tle!
   startMonsterSound();
 
   const hakerText = [
@@ -205,7 +206,6 @@ function triggerJumpscare() {
   const jump = document.getElementById('jumpscare-screen');
   jump.style.display = 'flex';
   
-  // Dźwięk przy jumpscare
   playJumpscareSound();
 
   document.documentElement.requestFullscreen().catch(() => {});
@@ -225,7 +225,6 @@ function triggerJumpscare() {
         strobe.style.display = 'none';
         document.getElementById('bsod-screen').style.display = 'flex';
         
-        // Wyłączamy dźwięk całkowicie po BSOD
         if (monsterOsc) { try { monsterOsc.stop(); monsterLfo.stop(); } catch(e) {} }
       }
     }, 30); 
