@@ -3,252 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FATAL SYSTEM FAILURE - NO ESCAPE</title>
+<title>System32.exe has stopped working</title>
 <style>
-  /* Reset i baza */
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 100vw; height: 100vh; overflow: hidden;
-    background: #000; color: #0f0;
-    font-family: 'Courier New', monospace;
-    cursor: crosshair;
-    user-select: none;
+  body {
+    background: #000; color: #fff; font-family: 'Courier New', monospace;
+    width: 100vw; height: 100vh; overflow: hidden; cursor: none;
   }
 
-  /* Baza pod wszystkie syfy */
-  .layer {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 1;
+  /* Ekran terminala */
+  #terminal-screen {
+    position: absolute; inset: 0; padding: 20px;
+    font-size: 18px; line-height: 1.4; white-space: pre-wrap;
+    z-index: 10; text-shadow: 0 0 5px #fff;
   }
 
-  /* Efekt rozwalonego CSS */
-  @keyframes crazy-shake {
-    0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-    25% { transform: translate(10px, -10px) rotate(2deg) scale(1.05); }
-    50% { transform: translate(-15px, 15px) rotate(-3deg) scale(0.95); }
-    75% { transform: translate(15px, 10px) rotate(1deg) scale(1.02); }
-    100% { transform: translate(-10px, -15px) rotate(-2deg) scale(1); }
+  /* Zdjęcie - Pierdolnięcie */
+  #jumpscare-screen {
+    position: absolute; inset: 0; background: #000;
+    z-index: 20; display: none;
+    justify-content: center; align-items: center; flex-direction: column;
   }
-  .shake-hard { animation: crazy-shake 0.1s infinite; }
-
-  /* Glitch na tekście */
-  @keyframes text-glitch {
-    0% { text-shadow: 2px 0 red, -2px 0 blue; }
-    50% { text-shadow: -2px 0 red, 2px 0 blue; }
-    100% { text-shadow: 2px 0 red, -2px 0 blue; }
+  #jumpscare-screen img {
+    width: 80%; max-width: 600px; filter: grayscale(100%) contrast(200%);
+    animation: zoomIn 0.1s forwards;
   }
-  .glitch-text { animation: text-glitch 0.05s infinite; }
-
-  /* Ekran główny - wielkie napisy */
-  #main-screen {
-    position: fixed; inset: 0; z-index: 50;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    background: radial-gradient(circle, #300, #000);
-    text-align: center;
+  #jumpscare-screen h1 {
+    color: #f00; font-size: 5rem; margin-top: 20px;
+    text-shadow: 0 0 20px #f00;
   }
-  #main-screen h1 {
-    font-size: 8rem; color: #f00; margin-bottom: 20px;
-    text-shadow: 0 0 20px #f00, 0 0 40px #f00;
-  }
-  #main-screen p { font-size: 2rem; color: #fff; }
-
-  /* Elementy sieczki */
-  .random-box {
-    position: fixed; border: 2px solid #f00; background: rgba(0,0,0,0.8);
-    color: #fff; font-family: monospace; font-size: 12px; padding: 5px;
-    box-shadow: 0 0 10px #f00; z-index: 9999;
-  }
-  
-  .random-line {
-    position: fixed; background: #0f0; z-index: 9998; opacity: 0.5;
+  @keyframes zoomIn {
+    from { transform: scale(0.1); }
+    to { transform: scale(1); }
   }
 
-  /* Nakładka matrixa */
-  #matrix-canvas { position: fixed; inset: 0; z-index: 2; opacity: 0.4; }
-
-  /* Terminal z błędami */
-  #terminal {
-    position: fixed; inset: 0; z-index: 10;
-    padding: 20px; font-size: 14px; line-height: 1.2;
-    overflow: hidden; text-shadow: 0 0 5px #0f0;
-    white-space: pre-wrap;
+  /* Stroboskop */
+  #strobe-screen {
+    position: absolute; inset: 0; background: #fff;
+    z-index: 30; display: none;
   }
-  .err { color: #f00; font-weight: bold; }
-  .warn { color: #ff0; }
+  .flash-black { background: #000 !important; }
+  .flash-white { background: #fff !important; }
 
-  /* Filtry rozwalające */
-  .filter-glitch {
-    position: fixed; inset: 0; z-index: 100;
-    pointer-events: none;
-    backdrop-filter: invert(1) hue-rotate(90deg);
-    opacity: 0; /* Będzie migać w JS */
+  /* Blue Screen (BSOD) */
+  #bsod-screen {
+    position: absolute; inset: 0; background: #0078D7;
+    z-index: 40; display: none; color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 10% 15%; flex-direction: column; justify-content: flex-start;
   }
+  #bsod-screen h1 { font-size: 10rem; margin-bottom: 20px; }
+  #bsod-screen p { font-size: 2rem; max-width: 800px; line-height: 1.3; }
+  #bsod-screen .code { font-size: 1.2rem; margin-top: 30px; color: #ccc; }
 </style>
 </head>
 <body>
 
-<!-- Warstwy wizualne -->
-<canvas id="matrix-canvas"></canvas>
-<div id="terminal"></div>
-<div class="filter-glitch" id="glitch-filter"></div>
+<!-- Ekran 1: Terminal -->
+<div id="terminal-screen"></div>
 
-<!-- Ekran startowy -->
-<div id="main-screen">
-  <h1 class="glitch-text">CRITICAL ERROR</h1>
-  <p>Kliknij, aby spróbować uratować system.</p>
+<!-- Ekran 2: Jumpscare -->
+<div id="jumpscare-screen">
+  <!-- Tutaj odwołujemy się do wgranego pliku jumpscare.jpg -->
+  <img src="jumpscare.jpg" alt="SYSTEM FAILURE">
+  <h1>SYSTEM OVERRIDE</h1>
 </div>
 
-<!-- Ukryte iframes do wywalania sesji -->
-<iframe src="https://accounts.google.com/Logout" style="display:none;"></iframe>
-<iframe src="https://store.steampowered.com/logout" style="display:none;"></iframe>
-<iframe src="https://github.com/logout" style="display:none;"></iframe>
-<iframe src="https://www.facebook.com/logout.php" style="display:none;"></iframe>
+<!-- Ekran 3: Stroboskop -->
+<div id="strobe-screen"></div>
+
+<!-- Ekran 4: Blue Screen -->
+<div id="bsod-screen">
+  <h1>:(</h1>
+  <p>Twój komputer napotkał problem i wymaga ponownego uruchomienia. Trwa zbieranie informacji o błędzie, a następnie nastąpi ponowne uruchomienie.</p>
+  <p class="code">Kod błędu: 0x000000F4<br>Błąd: CRITICAL_PROCESS_DIED</p>
+</div>
 
 <script>
-// ==== 1. MATRIX ====
-const canvas = document.getElementById('matrix-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'.split('');
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = [];
-for (let x = 0; x < columns; x++) drops[x] = 1;
+// Blokada prawego przycisku myszy
+document.addEventListener('contextmenu', e => e.preventDefault());
 
-function drawMatrix() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#0F0';
-  ctx.font = fontSize + 'px monospace';
-  for (let i = 0; i < drops.length; i++) {
-    const text = letters[Math.floor(Math.random() * letters.length)];
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-    drops[i]++;
-  }
-}
-setInterval(drawMatrix, 30);
-
-// ==== 2. TERMINAL ====
-const terminal = document.getElementById('terminal');
-const errors = [
-  '[FATAL] Kernel panic - not syncing: Fatal exception',
-  '[ERROR] Memory corruption detected at 0xDEADBEEF',
-  '> WARNING: CPU temperature critical: 105°C',
-  '> Uploading your files to 192.168.1.666...',
-  '> Ransomware encrypted your disk.',
-  '> JUST KIDDING! But you are scared, right?',
-  '> YOUR IP HAS BEEN LOGGED.',
-  '> Sending data to botnet...',
-  '> SYSTEM FAILURE IMMINENT.',
-  '> DO NOT TURN OFF YOUR COMPUTER.'
-];
-
-function writeLine() {
-  const div = document.createElement('div');
-  const r = Math.random();
-  if (r < 0.5) div.className = 'err';
-  else if (r < 0.8) div.className = 'warn';
-  div.textContent = errors[Math.floor(Math.random() * errors.length)];
-  terminal.appendChild(div);
-  terminal.scrollTop = terminal.scrollHeight;
-  if (terminal.childNodes.length > 100) terminal.removeChild(terminal.firstChild);
-}
-
-// ==== 3. GENERATOR CHAOSU (setki elementów) ====
-function spawnChaos() {
-  // Losowe "błędy" na ekranie
-  const box = document.createElement('div');
-  box.className = 'random-box';
-  box.textContent = errors[Math.floor(Math.random() * errors.length)];
-  box.style.left = Math.random() * (window.innerWidth - 200) + 'px';
-  box.style.top = Math.random() * (window.innerHeight - 50) + 'px';
-  box.style.transform = `rotate(${Math.random() * 360}deg) scale(${Math.random() * 2 + 0.5})`;
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), Math.random() * 3000 + 1000);
-
-  // Losowe linie
-  const line = document.createElement('div');
-  line.className = 'random-line';
-  line.style.width = Math.random() * window.innerWidth + 'px';
-  line.style.height = Math.random() * 5 + 1 + 'px';
-  line.style.left = Math.random() * window.innerWidth + 'px';
-  line.style.top = Math.random() * window.innerHeight + 'px';
-  line.style.transform = `rotate(${Math.random() * 360}deg)`;
-  document.body.appendChild(line);
-  setTimeout(() => line.remove(), 500);
-}
-
-// ==== 4. DŹWIĘKI (beepy i szum) ====
-function playBeep() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    oscillator.type = 'sawtooth';
-    oscillator.frequency.value = Math.random() * 1000 + 100;
-    gainNode.gain.value = 0.05;
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.1);
-  } catch(e) {}
-}
-
-// ==== 5. ODPALANIE CHAOSU (po kliknięciu) ====
-document.getElementById('main-screen').addEventListener('click', () => {
-  // Ukryj ekran startowy
-  document.getElementById('main-screen').style.display = 'none';
+// Sekwencja zdarzeń
+function startSequence() {
+  const term = document.getElementById('terminal-screen');
+  term.style.display = 'block';
   
-  // Włącz drgawki strony
-  document.body.classList.add('shake-hard');
+  const hakerText = [
+    "> Inicjalizacja protokołu awaryjnego...",
+    "> Pobieranie danych z serwera 192.168.1.666...",
+    "> Bypass firewall... SUKCES.",
+    "> Pobieranie plików systemowych...",
+    "> UWAGA: Wykryto intruza!",
+    "> Inicjalizacja procedury zniszczenia...",
+    "> 10%... 50%... 99%...",
+    "> BŁĄD KRYTYCZNY. SYSTEM ZARAZ WYBUCHNIE."
+  ];
+  
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < hakerText.length) {
+      term.innerText += hakerText[i] + "\n";
+      i++;
+    } else {
+      clearInterval(interval);
+      setTimeout(triggerJumpscare, 1500);
+    }
+  }, 300); 
+}
 
-  // Włącz filtry
-  const filter = document.getElementById('glitch-filter');
-  setInterval(() => {
-    filter.style.opacity = Math.random() > 0.8 ? '0.3' : '0';
-  }, 100);
+// 2. Jumpscare i Stroboskop
+function triggerJumpscare() {
+  document.getElementById('terminal-screen').style.display = 'none';
+  const jump = document.getElementById('jumpscare-screen');
+  jump.style.display = 'flex';
+  
+  document.documentElement.requestFullscreen().catch(() => {});
 
-  // Wymuś pełny ekran (jeśli przeglądarka pozwoli)
-  document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
-
-  // Zablokuj menu kontekstowe (prawy przycisk)
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // Wysyp okienek i linii
-  setInterval(spawnChaos, 50);
-
-  // Zrzut tekstu terminala (coraz szybciej)
-  setInterval(writeLine, 10);
-
-  // Dźwięki
-  setInterval(playBeep, 200);
-
-  // Agresywne miganie tła
-  setInterval(() => {
-    document.body.style.background = Math.random() > 0.5 ? '#000' : '#300';
-  }, 50);
-
-  // Po 5 sekundach wyskakuje fałszywy Blue Screen
   setTimeout(() => {
-    document.body.innerHTML = `
-      <div style="position:fixed;inset:0;background:#0000aa;color:#fff;z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;text-align:center;padding:50px;">
-        <h1 style="font-size:100px;margin-bottom:20px;">:(</h1>
-        <h2 style="font-size:30px;margin-bottom:20px;">Twój komputer napotkał problem i wymaga ponownego uruchomienia.</h2>
-        <p style="font-size:20px;">Trwa zbieranie informacji o błędzie... 0%</p>
-        <p style="font-size:16px;margin-top:20px;">Kod błędu: 0x000000DEAD</p>
-        <p style="font-size:14px;margin-top:40px;color:#aaa;">Naciśnij ESC, aby spróbować wyjść (jeśli potrafisz).</p>
-      </div>
-    `;
-  }, 5000);
+    jump.style.display = 'none';
+    const strobe = document.getElementById('strobe-screen');
+    strobe.style.display = 'block';
+    
+    let flashCount = 0;
+    const strobeInterval = setInterval(() => {
+      strobe.className = (flashCount % 2 === 0) ? 'flash-white' : 'flash-black';
+      flashCount++;
+      
+      if (flashCount > 15) {
+        clearInterval(strobeInterval);
+        strobe.style.display = 'none';
+        document.getElementById('bsod-screen').style.display = 'flex';
+      }
+    }, 80);
+  }, 2000); 
+}
 
-  // Po 10 sekundach atak wstrząsu końcowego (jeśli ktoś próbuje wyjść)
-  setTimeout(() => {
-    document.body.style.animation = 'crazy-shake 0.05s infinite';
-  }, 10000);
+// 3. Blokada klawisza ESC i F11
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' || e.key === 'F11') {
+    e.preventDefault(); 
+  }
 });
+
+// Odpalenie sekwencji
+document.body.addEventListener('click', () => {
+  startSequence();
+}, { once: true });
+
+// Ekran startowy
+document.getElementById('terminal-screen').innerHTML = "<span style='color:#fff; font-size:24px;'>Kliknij, aby zaktualizować system (WAŻNE)</span>";
+
 </script>
 </body>
 </html>
